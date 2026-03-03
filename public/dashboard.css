@@ -107,6 +107,26 @@ button:hover{
   filter: brightness(1.08);
 }
 
+/* Header logo */
+
+.headerLogoLink{
+  display: block;
+}
+
+.headerLogo{
+  max-width: 260px;
+  height: auto;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* Mobile sizing */
+@media (max-width: 820px){
+  .headerLogo{
+    max-width: 200px;
+  }
+}
+
 /* ================= TABLE ================= */
 
 main{
@@ -145,6 +165,10 @@ main{
 .error{
   color: #fecaca;
 }
+
+/* Force pointer cursor everywhere on clickable pods */
+.podRow, .podRow * { cursor: pointer !important; }
+.podCard, .podCard * { cursor: pointer !important; }
 
 /* ================= STATUS BADGES ================= */
 
