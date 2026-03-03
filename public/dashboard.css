@@ -114,7 +114,6 @@ button:hover{
 }
 
 .headerLogo{
-  max-width: 260px;
   height: auto;
   display: block;
   margin-bottom: 6px;
@@ -178,7 +177,7 @@ main{
   gap: 8px;
   padding: 6px 12px;
   border-radius: 999px;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 12px;
   letter-spacing: .3px;
 }
@@ -297,10 +296,9 @@ main{
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-weight: 900;
+  font-weight: 500;
   color: #eaf2ff;
   text-decoration: underline;
-  text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
 
