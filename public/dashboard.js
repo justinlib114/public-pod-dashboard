@@ -13,7 +13,11 @@ function ymdToday() {
 function fmtTime(dt) {
   try {
     const d = new Date(dt);
-    return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    return d.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    });
   } catch {
     return dt;
   }
