@@ -30,24 +30,50 @@
   </header>
 
   <main>
-  <!-- Mobile/compact layout -->
-  <div id="cards" class="cards" aria-live="polite"></div>
+    <!-- Mobile/compact layout -->
+    <div id="cards" class="cards" aria-live="polite"></div>
 
-  <!-- Desktop layout -->
-  <table class="table" id="table">
-    <thead>
-      <tr>
-        <th>Pod</th>
-        <th>Status</th>
-        <th>Current Reservation</th>
-        <th>Next Reservation</th>
-      </tr>
-    </thead>
-    <tbody id="rows">
-      <tr><td colspan="4" class="muted">Choose dates and click Refresh.</td></tr>
-    </tbody>
-  </table>
-</main>
+    <!-- Desktop layout -->
+    <table class="table" id="table">
+      <thead>
+        <tr>
+          <th>Pod</th>
+          <th>Status</th>
+          <th>Current Reservation</th>
+          <th>Next Reservation</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="4" class="muted">Choose dates and click Refresh.</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <!-- Pod details modal -->
+  <div id="podModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modalBackdrop" data-close="1"></div>
+
+    <div class="modalPanel">
+      <div class="modalHeader">
+        <div>
+          <div id="modalTitle" class="modalTitle">Pod</div>
+          <div id="modalSubtitle" class="muted">—</div>
+        </div>
+        <button id="modalClose" class="modalClose" type="button" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="modalRow">
+          <label class="modalLabel">
+            Day
+            <input id="modalDay" type="date" />
+          </label>
+        </div>
+
+        <div id="modalList" class="modalList"></div>
+      </div>
+    </div>
+  </div>
 
   <script src="/dashboard.js"></script>
 </body>
