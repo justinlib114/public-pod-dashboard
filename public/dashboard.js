@@ -16,7 +16,7 @@ function fmtTime(dt) {
     return d.toLocaleTimeString([], {
       hour: "numeric",
       minute: "2-digit",
-      hour12: true
+      hour12: true,
     });
   } catch {
     return dt;
@@ -33,13 +33,29 @@ function isSameDay(a, b) {
   );
 }
 
+// ✅ Used for ranges that need a date + time (and forced 12-hour)
 function fmtDateTime(dt) {
   const d = new Date(dt);
-  return d.toLocaleString([], {
+  return d.toLocaleString("en-US", {
     month: "numeric",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    hour12: true,
+  });
+}
+
+// ✅ Used for the header "Updated:" timestamp (forced 12-hour)
+function fmtUpdated(dt) {
+  const d = new Date(dt);
+  return d.toLocaleString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
   });
 }
 
@@ -226,7 +242,9 @@ function openModalForPod(eid) {
     // Reservations for THIS pod whose start date is this day
     const forDay = bookings
       .filter((b) => isSameDay(b.fromDate, dayDate))
-      .sort((a, b) => new Date(a.fromDate).getTime() - new Date(b.fromDate).getTime());
+      .sort(
+        (a, b) => new Date(a.fromDate).getTime() - new Date(b.fromDate).getTime()
+      );
 
     if (!forDay.length) {
       listEl.innerHTML = `
@@ -244,7 +262,9 @@ function openModalForPod(eid) {
         const to = new Date(b.toDate);
         return `
           <div class="slot">
-            <div class="slotTime">${escapeHtml(fmtTime(from))}–${escapeHtml(fmtTime(to))}</div>
+            <div class="slotTime">${escapeHtml(fmtTime(from))}–${escapeHtml(
+          fmtTime(to)
+        )}</div>
             <div class="slotMeta">${escapeHtml(ymd)}</div>
           </div>
         `;
@@ -278,8 +298,10 @@ async function loadData() {
   const start = startEl?.value || ymdToday();
   const end = endEl?.value || start;
 
-  if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="muted">Loading…</td></tr>`;
-  if (cards) cards.innerHTML = `<div class="card"><div class="muted">Loading…</div></div>`;
+  if (tbody)
+    tbody.innerHTML = `<tr><td colspan="4" class="muted">Loading…</td></tr>`;
+  if (cards)
+    cards.innerHTML = `<div class="card"><div class="muted">Loading…</div></div>`;
 
   if (countdownTimer) {
     clearInterval(countdownTimer);
@@ -287,7 +309,9 @@ async function loadData() {
   }
 
   try {
-    const url = `/api/pods-status?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    const url = `/api/pods-status?start=${encodeURIComponent(
+      start
+    )}&end=${encodeURIComponent(end)}`;
     const r = await fetch(url);
 
     if (!r.ok) {
@@ -298,16 +322,20 @@ async function loadData() {
     const data = await r.json();
     lastResults = Array.isArray(data.results) ? data.results : [];
 
-    const updated = new Date(data.now).toLocaleString();
+    // ✅ Force 12-hour timestamp in header
+    const updated = fmtUpdated(data.now);
+
     if (meta) {
-      meta.textContent = `Range: ${data.range.start} → ${data.range.end} (${data.range.days} day${
-        data.range.days === 1 ? "" : "s"
-      }) | Updated: ${updated}`;
+      meta.textContent = `Range: ${data.range.start} → ${data.range.end} (${
+        data.range.days
+      } day${data.range.days === 1 ? "" : "s"}) | Updated: ${updated}`;
     }
 
     if (!lastResults.length) {
-      if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="muted">No pods returned.</td></tr>`;
-      if (cards) cards.innerHTML = `<div class="card"><div class="muted">No pods returned.</div></div>`;
+      if (tbody)
+        tbody.innerHTML = `<tr><td colspan="4" class="muted">No pods returned.</td></tr>`;
+      if (cards)
+        cards.innerHTML = `<div class="card"><div class="muted">No pods returned.</div></div>`;
       return;
     }
 
