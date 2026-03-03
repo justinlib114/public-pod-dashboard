@@ -1,55 +1,227 @@
+:root{
+  --bg: #0b1220;
+  --panel: rgba(255,255,255,.06);
+  --panel2: rgba(255,255,255,.09);
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.65);
+  --border: rgba(255,255,255,.12);
 
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 14px;
+  --ok: #22c55e;
+  --bad: #ef4444;
+  --warn: #f59e0b;
+
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --radius: 16px;
 }
 
-.header {
+* { box-sizing: border-box; }
+
+body{
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(900px 500px at 10% 10%, rgba(59,130,246,.25), transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, rgba(34,197,94,.20), transparent 60%),
+    radial-gradient(900px 600px at 40% 90%, rgba(239,68,68,.15), transparent 60%),
+    var(--bg);
+  padding: 16px;
+}
+
+.header{
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(11,18,32,.78);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 14px 12px;
+  box-shadow: var(--shadow);
+
   display: flex;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
   align-items: flex-end;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
-h1 { margin: 0 0 4px 0; font-size: 20px; }
-.muted { color: #666; font-size: 13px; }
+h1{
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  letter-spacing: .2px;
+}
 
-.controls {
+.muted{ color: var(--muted); font-size: 12px; }
+
+.controls{
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   align-items: flex-end;
 }
 
-label { display: flex; flex-direction: column; font-size: 12px; gap: 4px; }
-input, button {
-  padding: 7px 10px;
+label{
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+input, button{
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  padding: 10px 12px;
   font-size: 14px;
+  min-height: 42px; /* good tap target */
 }
 
-button { cursor: pointer; }
+input:focus, button:focus{
+  outline: 2px solid rgba(59,130,246,.55);
+  outline-offset: 2px;
+}
 
-.table {
+button{
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(59,130,246,.35), rgba(59,130,246,.20));
+  border-color: rgba(59,130,246,.35);
+  box-shadow: 0 8px 20px rgba(59,130,246,.18);
+  font-weight: 650;
+}
+
+button:hover{
+  filter: brightness(1.05);
+}
+
+main{
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ===== Desktop table ===== */
+.table{
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: var(--shadow);
 }
 
-.table th, .table td {
-  border: 1px solid #ddd;
-  padding: 8px;
+.table th, .table td{
+  padding: 12px;
   vertical-align: top;
+  border-bottom: 1px solid var(--border);
 }
 
-.table th {
-  background: #f2f2f2;
+.table th{
   text-align: left;
+  color: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.05);
+  font-size: 12px;
+  letter-spacing: .3px;
+  text-transform: uppercase;
 }
 
-.error { color: #b00020; }
+.table tr:last-child td{ border-bottom: 0; }
 
-/* Pod status + countdown labels */
-.available { color: green; font-weight: 700; }
-.reserved  { color: #b00020; font-weight: 700; }
+.error{ color: #fecaca; }
+
+/* ===== Status badges ===== */
+.badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.badge::before{
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.badge.available{
+  background: rgba(34,197,94,.14);
+  border-color: rgba(34,197,94,.35);
+}
+.badge.available::before{ background: var(--ok); }
+
+.badge.reserved{
+  background: rgba(239,68,68,.14);
+  border-color: rgba(239,68,68,.35);
+}
+.badge.reserved::before{ background: var(--bad); }
+
+/* Countdown label */
+.countdown{
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(255,255,255,.82);
+}
+
+/* ===== Mobile cards ===== */
+.cards{
+  display: none; /* shown on small screens */
+  gap: 12px;
+}
+
+.card{
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  box-shadow: var(--shadow);
+  padding: 14px;
+}
+
+.cardTop{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.podName{
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+.cardGrid{
+  display: grid;
+  gap: 10px;
+}
+
+.k{
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.v{
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* Switch to cards on small screens */
+@media (max-width: 820px){
+  body{ padding: 12px; }
+  .cards{ display: grid; }
+  #table{ display: none; }
+  .header{ padding: 12px; }
+  .controls{ width: 100%; }
+  label{ flex: 1; min-width: 140px; }
+  button{ width: 100%; }
+}
