@@ -1,3 +1,4 @@
+/* public/dashboard.css */
 :root{
   --bg: #0f172a;              /* darker background */
   --panel: #111c33;           /* stronger panel contrast */
@@ -241,6 +242,56 @@ main{
   .cards{ display: grid; }
   #table{ display: none; }
   h1{ font-size: 24px; }
+}
+
+/* ================= Clickable pod affordance ================= */
+
+.podCard,
+.podRow{
+  cursor: pointer;
+  transition: transform .12s ease, filter .12s ease;
+}
+
+@media (hover:hover){
+  .podCard:hover{
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+  }
+  .podRow:hover td{
+    background: rgba(255,255,255,.05);
+  }
+}
+
+.podCard:active{
+  transform: scale(.99);
+  filter: brightness(1.03);
+}
+
+.podCell{ display: grid; gap: 4px; }
+
+.podLink{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  color: #eaf2ff;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.podHint{
+  font-size: 12px;
+  color: var(--muted);
+  opacity: .95;
+}
+
+.chev{
+  display: inline-block;
+  font-size: 18px;
+  line-height: 1;
+  opacity: .9;
+  transform: translateY(1px);
 }
 
 /* ===== Modal ===== */
