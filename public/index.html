@@ -30,20 +30,24 @@
   </header>
 
   <main>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Pod</th>
-          <th>Status</th>
-          <th>Current Reservation</th>
-          <th>Next Reservation</th>
-        </tr>
-      </thead>
-      <tbody id="rows">
-        <tr><td colspan="4" class="muted">Choose dates and click Refresh.</td></tr>
-      </tbody>
-    </table>
-  </main>
+  <!-- Mobile/compact layout -->
+  <div id="cards" class="cards" aria-live="polite"></div>
+
+  <!-- Desktop layout -->
+  <table class="table" id="table">
+    <thead>
+      <tr>
+        <th>Pod</th>
+        <th>Status</th>
+        <th>Current Reservation</th>
+        <th>Next Reservation</th>
+      </tr>
+    </thead>
+    <tbody id="rows">
+      <tr><td colspan="4" class="muted">Choose dates and click Refresh.</td></tr>
+    </tbody>
+  </table>
+</main>
 
   <script src="/dashboard.js"></script>
 </body>
