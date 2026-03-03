@@ -1,4 +1,3 @@
-
 // server.js — Public Pod Dashboard (availability-only, date range + manual refresh, NO patron names)
 const express = require("express");
 const fetch = require("node-fetch");
@@ -88,6 +87,7 @@ app.get("/ping", (req, res) => res.send("OK"));
    - "current" = now >= start AND now < end
    - "next" = first booking with start > now
    - NEVER returns patron names
+   - Returns bookings list per pod for modal details
 ============================ */
 app.get("/api/pods-status", async (req, res) => {
   try {
@@ -210,7 +210,7 @@ app.get("/api/pods-status", async (req, res) => {
         start,
         end,
         fromDate: b.fromDate,
-        toDate: b.toDate
+        toDate: b.toDate,
         // ✅ patron intentionally omitted
       });
     }
@@ -250,6 +250,12 @@ app.get("/api/pods-status", async (req, res) => {
           status: active ? "Reserved" : "Available",
           active: active ? { fromDate: active.fromDate, toDate: active.toDate } : null,
           next: next ? { fromDate: next.fromDate, toDate: next.toDate } : null,
+
+          // ✅ NEW: all reservations for THIS pod (in the requested range)
+          bookings: list.map((bk) => ({
+            fromDate: bk.fromDate,
+            toDate: bk.toDate,
+          })),
         };
       })
       .sort((a, b) => String(a.name).localeCompare(String(b.name)));
