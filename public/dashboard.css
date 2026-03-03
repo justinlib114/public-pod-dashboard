@@ -1,1 +1,55 @@
 
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 14px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+h1 { margin: 0 0 4px 0; font-size: 20px; }
+.muted { color: #666; font-size: 13px; }
+
+.controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+label { display: flex; flex-direction: column; font-size: 12px; gap: 4px; }
+input, button {
+  padding: 7px 10px;
+  font-size: 14px;
+}
+
+button { cursor: pointer; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  vertical-align: top;
+}
+
+.table th {
+  background: #f2f2f2;
+  text-align: left;
+}
+
+.error { color: #b00020; }
+
+/* Pod status + countdown labels */
+.available { color: green; font-weight: 700; }
+.reserved  { color: #b00020; font-weight: 700; }
