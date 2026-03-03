@@ -1,3 +1,4 @@
+// public/dashboard.js
 let countdownTimer = null;
 let lastResults = []; // keep latest results for click-to-view
 
@@ -107,9 +108,20 @@ function renderTableRows(results) {
         ? escapeHtml(fmtRange(p.next.fromDate, p.next.toDate))
         : `<span class="muted">—</span>`;
 
+      // ✅ Make it obvious it's clickable (link style + hint + chevron)
+      const podCell = `
+        <div class="podCell">
+          <div class="podLink">
+            ${escapeHtml(p.name || "")}
+            <span class="chev">›</span>
+          </div>
+          <div class="podHint">Tap to view this pod’s day schedule</div>
+        </div>
+      `;
+
       return `
-        <tr class="podRow" data-eid="${escapeHtml(p.eid)}" style="cursor:pointer">
-          <td><strong>${escapeHtml(p.name || "")}</strong></td>
+        <tr class="podRow" data-eid="${escapeHtml(p.eid)}">
+          <td>${podCell}</td>
           <td>${badge}</td>
           <td>${current}</td>
           <td>${next}</td>
@@ -141,10 +153,21 @@ function renderCards(results) {
         ? `<div class="v">${escapeHtml(fmtRange(p.next.fromDate, p.next.toDate))}</div>`
         : `<div class="v muted">—</div>`;
 
+      // ✅ Obvious click affordance on cards too
+      const podTitle = `
+        <div class="podName">
+          <span class="podLink">
+            ${escapeHtml(p.name || "")}
+            <span class="chev">›</span>
+          </span>
+          <div class="podHint">Tap to view this pod’s day schedule</div>
+        </div>
+      `;
+
       return `
-        <section class="card podCard" data-eid="${escapeHtml(p.eid)}" style="cursor:pointer">
+        <section class="card podCard" data-eid="${escapeHtml(p.eid)}">
           <div class="cardTop">
-            <div class="podName">${escapeHtml(p.name || "")}</div>
+            ${podTitle}
             ${badge}
           </div>
 
