@@ -1,4 +1,5 @@
 let countdownTimer = null;
+let lastResults = []; // keep latest results for click-to-view
 
 function ymdToday() {
   const d = new Date();
@@ -39,13 +40,9 @@ function fmtDateTime(dt) {
 
 function fmtRange(fromDate, toDate) {
   if (!fromDate || !toDate) return "";
-
-  // If reservation is today, show time only
   if (isSameDay(fromDate, new Date())) {
     return `${fmtTime(fromDate)}–${fmtTime(toDate)}`;
   }
-
-  // Otherwise, show date + time
   return `${fmtDateTime(fromDate)}–${fmtTime(toDate)}`;
 }
 
@@ -67,8 +64,7 @@ function minutesUntil(isoEnd) {
   return Math.ceil((end - now) / 60000);
 }
 
-// Don’t change classes here (cards/table set classes)
-// Just update text.
+// Don’t change classes here (cards/table set classes); just update text.
 function renderCountdown() {
   document.querySelectorAll("[data-endtime]").forEach((el) => {
     const endIso = el.getAttribute("data-endtime");
@@ -112,7 +108,7 @@ function renderTableRows(results) {
         : `<span class="muted">—</span>`;
 
       return `
-        <tr>
+        <tr class="podRow" data-eid="${escapeHtml(p.eid)}" style="cursor:pointer">
           <td><strong>${escapeHtml(p.name || "")}</strong></td>
           <td>${badge}</td>
           <td>${current}</td>
@@ -146,7 +142,7 @@ function renderCards(results) {
         : `<div class="v muted">—</div>`;
 
       return `
-        <section class="card">
+        <section class="card podCard" data-eid="${escapeHtml(p.eid)}" style="cursor:pointer">
           <div class="cardTop">
             <div class="podName">${escapeHtml(p.name || "")}</div>
             ${badge}
@@ -169,6 +165,79 @@ function renderCards(results) {
 }
 
 /* ============================
+   Modal: show reservations for this pod + day
+============================ */
+function openModalForPod(eid) {
+  const modal = document.getElementById("podModal");
+  const titleEl = document.getElementById("modalTitle");
+  const subtitleEl = document.getElementById("modalSubtitle");
+  const dayEl = document.getElementById("modalDay");
+  const listEl = document.getElementById("modalList");
+
+  if (!modal || !titleEl || !subtitleEl || !dayEl || !listEl) return;
+
+  const pod = lastResults.find((p) => String(p.eid) === String(eid));
+  if (!pod) return;
+
+  // Default day = start date input (or today)
+  const startEl = document.getElementById("start");
+  const defaultDay = startEl?.value || ymdToday();
+  dayEl.value = defaultDay;
+
+  titleEl.textContent = pod.name || "Pod";
+  subtitleEl.textContent = "Reservations for this pod (no patron names).";
+
+  function renderDayList(ymd) {
+    const dayDate = new Date(`${ymd}T00:00:00`);
+    if (isNaN(dayDate.getTime())) {
+      listEl.innerHTML = `<div class="error">Invalid date.</div>`;
+      return;
+    }
+
+    const bookings = Array.isArray(pod.bookings) ? pod.bookings : [];
+
+    // Reservations for THIS pod whose start date is this day
+    const forDay = bookings
+      .filter((b) => isSameDay(b.fromDate, dayDate))
+      .sort((a, b) => new Date(a.fromDate).getTime() - new Date(b.fromDate).getTime());
+
+    if (!forDay.length) {
+      listEl.innerHTML = `
+        <div class="slot">
+          <div class="slotTime">No reservations</div>
+          <div class="slotMeta">This pod is open for the selected day.</div>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = forDay
+      .map((b) => {
+        const from = new Date(b.fromDate);
+        const to = new Date(b.toDate);
+        return `
+          <div class="slot">
+            <div class="slotTime">${escapeHtml(fmtTime(from))}–${escapeHtml(fmtTime(to))}</div>
+            <div class="slotMeta">${escapeHtml(ymd)}</div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  renderDayList(dayEl.value);
+  dayEl.onchange = () => renderDayList(dayEl.value);
+
+  modal.classList.remove("hidden");
+  document.getElementById("modalClose")?.focus();
+}
+
+function closeModal() {
+  const modal = document.getElementById("podModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+/* ============================
    Main load
 ============================ */
 async function loadData() {
@@ -182,15 +251,9 @@ async function loadData() {
   const start = startEl?.value || ymdToday();
   const end = endEl?.value || start;
 
-  // Loading states for both views
-  if (tbody) {
-    tbody.innerHTML = `<tr><td colspan="4" class="muted">Loading…</td></tr>`;
-  }
-  if (cards) {
-    cards.innerHTML = `<div class="card"><div class="muted">Loading…</div></div>`;
-  }
+  if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="muted">Loading…</td></tr>`;
+  if (cards) cards.innerHTML = `<div class="card"><div class="muted">Loading…</div></div>`;
 
-  // Stop any previous countdown loop
   if (countdownTimer) {
     clearInterval(countdownTimer);
     countdownTimer = null;
@@ -206,38 +269,63 @@ async function loadData() {
     }
 
     const data = await r.json();
-    const updated = new Date(data.now).toLocaleString();
+    lastResults = Array.isArray(data.results) ? data.results : [];
 
+    const updated = new Date(data.now).toLocaleString();
     if (meta) {
       meta.textContent = `Range: ${data.range.start} → ${data.range.end} (${data.range.days} day${
         data.range.days === 1 ? "" : "s"
       }) | Updated: ${updated}`;
     }
 
-    if (!data.results || !data.results.length) {
+    if (!lastResults.length) {
       if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="muted">No pods returned.</td></tr>`;
       if (cards) cards.innerHTML = `<div class="card"><div class="muted">No pods returned.</div></div>`;
       return;
     }
 
-    renderTableRows(data.results);
-    renderCards(data.results);
+    renderTableRows(lastResults);
+    renderCards(lastResults);
 
-    // Initial countdown render + interval
     renderCountdown();
     countdownTimer = setInterval(renderCountdown, 30000);
   } catch (e) {
     if (meta) meta.textContent = "—";
     const msg = escapeHtml(e.message || String(e));
-
     if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="error">${msg}</td></tr>`;
     if (cards) cards.innerHTML = `<div class="card"><div class="error">${msg}</div></div>`;
   }
 }
 
-document.getElementById("refresh")?.addEventListener("click", loadData);
+/* ============================
+   Click handling (cards + table + modal)
+============================ */
+document.addEventListener("click", (ev) => {
+  const closeBtn = ev.target.closest("#modalClose");
+  const backdrop = ev.target.closest("[data-close='1']");
+  if (closeBtn || backdrop) {
+    closeModal();
+    return;
+  }
 
-// Load immediately on first open
+  const card = ev.target.closest(".podCard");
+  if (card?.dataset?.eid) {
+    openModalForPod(card.dataset.eid);
+    return;
+  }
+
+  const row = ev.target.closest(".podRow");
+  if (row?.dataset?.eid) {
+    openModalForPod(row.dataset.eid);
+    return;
+  }
+});
+
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape") closeModal();
+});
+
+document.getElementById("refresh")?.addEventListener("click", loadData);
 window.addEventListener("DOMContentLoaded", loadData);
 
 /* ============================
