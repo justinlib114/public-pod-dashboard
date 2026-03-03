@@ -1,1 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Public Pod Dashboard</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/dashboard.css" />
+</head>
+<body>
+  <header class="header">
+    <div>
+      <h1>Public Pod Dashboard</h1>
+      <div id="meta" class="muted">—</div>
+    </div>
 
+    <div class="controls">
+      <label>
+        Start date
+        <input id="start" type="date" />
+      </label>
+
+      <label>
+        End date
+        <input id="end" type="date" />
+      </label>
+
+      <button id="refresh" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <main>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Pod</th>
+          <th>Status</th>
+          <th>Current Reservation</th>
+          <th>Next Reservation</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="4" class="muted">Choose dates and click Refresh.</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script src="/dashboard.js"></script>
+</body>
+</html>
