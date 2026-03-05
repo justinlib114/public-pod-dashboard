@@ -38,8 +38,16 @@ function parseYMD(s) {
 
 function daysBetweenInclusive(startDate, endDate) {
   const msPerDay = 24 * 60 * 60 * 1000;
-  const a = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()).getTime();
-  const b = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()).getTime();
+  const a = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate()
+  ).getTime();
+  const b = new Date(
+    endDate.getFullYear(),
+    endDate.getMonth(),
+    endDate.getDate()
+  ).getTime();
   return Math.floor((b - a) / msPerDay) + 1;
 }
 
@@ -100,7 +108,9 @@ async function getLibCalToken() {
 async function fetchBookingCheckStatuses(ids, headers) {
   const map = new Map(); // id -> normalized check_in_status
 
-  const unique = Array.from(new Set(ids.filter((x) => x != null))).map((x) => String(x));
+  const unique = Array.from(new Set(ids.filter((x) => x != null))).map((x) =>
+    String(x)
+  );
   if (!unique.length) return map;
 
   const batches = chunkArray(unique, BOOKING_DETAIL_BATCH_SIZE);
@@ -121,7 +131,9 @@ async function fetchBookingCheckStatuses(ids, headers) {
 
     if (!resp.ok) {
       const t = await resp.text();
-      throw new Error(`Booking detail error: ${resp.status} ${resp.statusText} - ${t}`);
+      throw new Error(
+        `Booking detail error: ${resp.status} ${resp.statusText} - ${t}`
+      );
     }
 
     const data = await resp.json();
@@ -152,9 +164,10 @@ app.get("/ping", (req, res) => res.send("OK"));
    - ACTIVE booking: now >= start AND now < end
    - Status driven by check_in_status on ACTIVE booking:
        - "in"  => Reserved
-       - otherwise ( "-", "out", missing ) => Available
-   - If ACTIVE booking exists but not checked in => activeState = "not_checked_in"
-   - NEVER returns patron names
+       - "-"   => Not checked in (still Available)
+       - "out" => Available (left early)
+   - IMPORTANT UX TWEAK:
+       If the active booking is "out", we do NOT show it as "Current Reservation"
 ============================ */
 app.get("/api/pods-status", async (req, res) => {
   try {
@@ -178,10 +191,14 @@ app.get("/api/pods-status", async (req, res) => {
     const endDate = parseYMD(endRaw);
 
     if (!startDate || !endDate) {
-      return res.status(400).json({ error: "Invalid start/end. Use YYYY-MM-DD." });
+      return res
+        .status(400)
+        .json({ error: "Invalid start/end. Use YYYY-MM-DD." });
     }
     if (endDate < startDate) {
-      return res.status(400).json({ error: "End date must be on/after start date." });
+      return res
+        .status(400)
+        .json({ error: "End date must be on/after start date." });
     }
 
     const rangeDays = daysBetweenInclusive(startDate, endDate);
@@ -211,7 +228,9 @@ app.get("/api/pods-status", async (req, res) => {
 
       if (!itemsResp.ok) {
         const t = await itemsResp.text();
-        throw new Error(`Items error: ${itemsResp.status} ${itemsResp.statusText} - ${t}`);
+        throw new Error(
+          `Items error: ${itemsResp.status} ${itemsResp.statusText} - ${t}`
+        );
       }
 
       const chunk = await itemsResp.json();
@@ -222,7 +241,7 @@ app.get("/api/pods-status", async (req, res) => {
       if (pageIndex > 20) break; // safety
     }
 
-    // 2) Fetch bookings for the whole range in one call:
+    // 2) Fetch bookings for the whole range
     const bookings = [];
     let page = 1;
 
@@ -246,7 +265,9 @@ app.get("/api/pods-status", async (req, res) => {
 
       if (!bookingsResp.ok) {
         const t = await bookingsResp.text();
-        throw new Error(`Bookings error: ${bookingsResp.status} ${bookingsResp.statusText} - ${t}`);
+        throw new Error(
+          `Bookings error: ${bookingsResp.status} ${bookingsResp.statusText} - ${t}`
+        );
       }
 
       const chunk = await bookingsResp.json();
@@ -313,11 +334,12 @@ app.get("/api/pods-status", async (req, res) => {
           (bk) => now.getTime() >= bk.start.getTime() && now.getTime() < bk.end.getTime()
         );
 
-        // If overlapping: reserved if ANY active booking is checked in
+        // Reserved if ANY active booking is checked in
         const activeIn = activeCandidates.find((bk) => bk.check_in_status === "in") || null;
 
-        // If there is any active booking, show it in "Current" (even if not checked in)
-        const activeAny = activeCandidates.length ? activeCandidates[0] : null;
+        // ✅ For display, ignore "out" bookings (left early)
+        // We only show "Current Reservation" if it's occupying OR not-checked-in.
+        const activeDisplay = activeCandidates.find((bk) => bk.check_in_status !== "out") || null;
 
         // NEXT booking: first booking whose start > now
         let next = null;
@@ -332,16 +354,19 @@ app.get("/api/pods-status", async (req, res) => {
         const status = activeIn ? "Reserved" : "Available";
 
         // Extra UI state:
-        let activeState = null; // null | "in" | "not_checked_in"
+        // - "in" => checked in, occupying
+        // - "not_checked_in" => active booking exists but not checked in ("-")
+        // - null => nothing active (or active is only "out")
+        let activeState = null;
         if (activeIn) activeState = "in";
-        else if (activeAny) activeState = "not_checked_in";
+        else if (activeDisplay) activeState = "not_checked_in";
 
-        const activeForDisplay = activeAny
+        const activeForDisplay = activeDisplay
           ? {
-              id: activeAny.id,
-              fromDate: activeAny.fromDate,
-              toDate: activeAny.toDate,
-              check_in_status: activeAny.check_in_status,
+              id: activeDisplay.id,
+              fromDate: activeDisplay.fromDate,
+              toDate: activeDisplay.toDate,
+              check_in_status: activeDisplay.check_in_status,
             }
           : null;
 
