@@ -392,3 +392,73 @@ main{
   font-size: 12px;
   color: var(--muted);
 }
+
+/* ============================
+   KIOSK MODE (Galaxy Tab A8 portrait)
+   - 3 cards fill the screen vertically
+============================ */
+
+/* Make the page a full-height flex layout */
+body.kiosk {
+  padding: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header takes only what it needs */
+body.kiosk .header {
+  position: static;           /* no sticky in kiosk */
+  margin: 0;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+}
+
+/* Optional: hide stuff to reclaim space (uncomment what you want) */
+/*
+body.kiosk .headerLogoLink { display: none; }
+body.kiosk h1 { display: none; }
+body.kiosk #meta { display: none; }
+body.kiosk .controls { display: none; }
+*/
+
+/* Main fills the remaining height */
+body.kiosk main {
+  flex: 1;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 12px;
+  display: flex;
+}
+
+/* Cards container becomes a vertical stack that fills height */
+body.kiosk .cards {
+  display: flex !important;   /* force cards view */
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+}
+
+/* Each card takes equal height (3 cards = 1/3 each) */
+body.kiosk .card {
+  flex: 1;
+  margin: 0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;    /* center content vertically */
+}
+
+/* Make text bigger for “wall display” readability */
+body.kiosk .podName { font-size: 28px; }
+body.kiosk .badge { font-size: 16px; padding: 10px 14px; }
+body.kiosk .k { font-size: 14px; }
+body.kiosk .v { font-size: 22px; line-height: 1.25; }
+body.kiosk .countdown { font-size: 18px; }
+
+/* Hide desktop table in kiosk */
+body.kiosk #table { display: none !important; }
