@@ -206,6 +206,15 @@ main{
   background: var(--bad);
 }
 
+/* ✅ NEW: NOT CHECKED IN (yellow) */
+.badge.notchecked{
+  background: rgba(245,158,11,.20);
+  color: #fde68a;
+}
+.badge.notchecked::before{
+  background: var(--warn);
+}
+
 .countdown{
   display: inline-block;
   margin-top: 6px;
