@@ -228,7 +228,7 @@ function openModalForPod(eid) {
   dayEl.value = defaultDay;
 
   titleEl.textContent = pod.name || "Pod";
-  subtitleEl.textContent = "Reservations for this pod (no patron names).";
+  subtitleEl.textContent = "Reservations for this pod.";
 
   function renderDayList(ymd) {
     const dayDate = new Date(`${ymd}T00:00:00`);
