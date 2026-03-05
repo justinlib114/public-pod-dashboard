@@ -100,10 +100,18 @@ function renderCountdown() {
 /* ============================
    Renderers
 ============================ */
-function statusBadgeHtml(isAvail) {
-  return isAvail
-    ? `<span class="badge available">Available</span>`
-    : `<span class="badge reserved">Reserved</span>`;
+function statusBadgeHtml(pod) {
+  // activeState provided by server:
+  // - "in" => checked in => Reserved
+  // - "not_checked_in" => active booking but NOT checked in
+  // - null => no active booking (or checked out treated as available)
+  if (pod?.activeState === "in") {
+    return `<span class="badge reserved">Reserved</span>`;
+  }
+  if (pod?.activeState === "not_checked_in") {
+    return `<span class="badge notchecked">Not checked in</span>`;
+  }
+  return `<span class="badge available">Available</span>`;
 }
 
 function renderTableRows(results) {
@@ -112,8 +120,7 @@ function renderTableRows(results) {
 
   tbody.innerHTML = results
     .map((p) => {
-      const isAvail = p.status === "Available";
-      const badge = statusBadgeHtml(isAvail);
+      const badge = statusBadgeHtml(p);
 
       let current = `<span class="muted">—</span>`;
       if (p.active) {
@@ -157,8 +164,7 @@ function renderCards(results) {
 
   cards.innerHTML = results
     .map((p) => {
-      const isAvail = p.status === "Available";
-      const badge = statusBadgeHtml(isAvail);
+      const badge = statusBadgeHtml(p);
 
       const current = p.active
         ? `
@@ -242,9 +248,7 @@ function openModalForPod(eid) {
     // Reservations for THIS pod whose start date is this day
     const forDay = bookings
       .filter((b) => isSameDay(b.fromDate, dayDate))
-      .sort(
-        (a, b) => new Date(a.fromDate).getTime() - new Date(b.fromDate).getTime()
-      );
+      .sort((a, b) => new Date(a.fromDate).getTime() - new Date(b.fromDate).getTime());
 
     if (!forDay.length) {
       listEl.innerHTML = `
@@ -262,9 +266,7 @@ function openModalForPod(eid) {
         const to = new Date(b.toDate);
         return `
           <div class="slot">
-            <div class="slotTime">${escapeHtml(fmtTime(from))}–${escapeHtml(
-          fmtTime(to)
-        )}</div>
+            <div class="slotTime">${escapeHtml(fmtTime(from))}–${escapeHtml(fmtTime(to))}</div>
             <div class="slotMeta">${escapeHtml(ymd)}</div>
           </div>
         `;
@@ -298,10 +300,8 @@ async function loadData() {
   const start = startEl?.value || ymdToday();
   const end = endEl?.value || start;
 
-  if (tbody)
-    tbody.innerHTML = `<tr><td colspan="4" class="muted">Loading…</td></tr>`;
-  if (cards)
-    cards.innerHTML = `<div class="card"><div class="muted">Loading…</div></div>`;
+  if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="muted">Loading…</td></tr>`;
+  if (cards) cards.innerHTML = `<div class="card"><div class="muted">Loading…</div></div>`;
 
   if (countdownTimer) {
     clearInterval(countdownTimer);
@@ -309,9 +309,7 @@ async function loadData() {
   }
 
   try {
-    const url = `/api/pods-status?start=${encodeURIComponent(
-      start
-    )}&end=${encodeURIComponent(end)}`;
+    const url = `/api/pods-status?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
     const r = await fetch(url);
 
     if (!r.ok) {
@@ -326,16 +324,15 @@ async function loadData() {
     const updated = fmtUpdated(data.now);
 
     if (meta) {
-      meta.textContent = `Range: ${data.range.start} → ${data.range.end} (${
-        data.range.days
-      } day${data.range.days === 1 ? "" : "s"}) | Updated: ${updated}`;
+      meta.textContent = `Range: ${data.range.start} → ${data.range.end} (${data.range.days} day${
+        data.range.days === 1 ? "" : "s"
+      }) | Updated: ${updated}`;
     }
 
     if (!lastResults.length) {
       if (tbody)
         tbody.innerHTML = `<tr><td colspan="4" class="muted">No pods returned.</td></tr>`;
-      if (cards)
-        cards.innerHTML = `<div class="card"><div class="muted">No pods returned.</div></div>`;
+      if (cards) cards.innerHTML = `<div class="card"><div class="muted">No pods returned.</div></div>`;
       return;
     }
 
